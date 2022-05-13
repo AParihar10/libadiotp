@@ -58,8 +58,9 @@
 #define ADI_OTP_ID_secure_emu_key1		11
 #define ADI_OTP_ID_public_key0			12
 #define ADI_OTP_ID_public_key1			13
+#define ADI_OTP_ID_gp1					14
 /* @todo define more fields to read */
-#define __ADI_OTP_ID_COUNT				14
+#define __ADI_OTP_ID_COUNT				15
 
 /* Maximum possible size of a buffer */
 #define MAX_OTP_LENGTH 512

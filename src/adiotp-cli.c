@@ -5,7 +5,7 @@
 
 #include "libadiotp.h"
 
-void usage(void) {
+static void usage(void) {
 	fprintf(stderr, "\n");
 	fprintf(stderr, " Usage:\n");
 	fprintf(stderr, "    adiotp-cli [id]\n");
@@ -22,7 +22,7 @@ void usage(void) {
 	fprintf(stderr, "\n");
 }
 
-int read(struct adi_otp *otp, uint32_t id) {
+static int cli_read(struct adi_otp *otp, uint32_t id) {
 	uint32_t len = MAX_OTP_LENGTH;
 	uint8_t buf[MAX_OTP_LENGTH];
 	uint32_t i;
@@ -38,7 +38,7 @@ int read(struct adi_otp *otp, uint32_t id) {
 	return 0;
 }
 
-int write(struct adi_otp *otp, uint32_t id) {
+static int cli_write(struct adi_otp *otp, uint32_t id) {
 	int res;
 	int ch;
 	uint8_t buf[MAX_OTP_LENGTH];
@@ -46,17 +46,17 @@ int write(struct adi_otp *otp, uint32_t id) {
 
 	while ((ch = getc(stdin)) != EOF) {
 		if (MAX_OTP_LENGTH == pos) {
-			fprintf(stderr, " Read more than %d characters from stdin, exceeding the\n");
+			fprintf(stderr, " Read more than %d characters from stdin, exceeding the\n", MAX_OTP_LENGTH);
 			fprintf(stderr, " max possible OTP size. Aborted write\n");
 			exit(1);
 		}
 		buf[pos++] = (uint8_t) (ch & 0xff);
 	}
 
-	ret = adi_otp_write(otp, id, buf, pos);
-	if (ret) {
-		fprintf(stderr, " Write error = %d\n", ret);
-		return ret;
+	res = adi_otp_write(otp, id, buf, pos);
+	if (res) {
+		fprintf(stderr, " Write error = %d\n", res);
+		return res;
 	}
 
 	return 0;
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 	struct adi_otp *otp;
 	uint32_t id;
 
-	otp = adi_get_otp();
+	otp = adi_otp_open();
 	if (!otp) {
 		fprintf(stderr, "Unable to open OTP\n");
 		exit(1);
@@ -75,10 +75,11 @@ int main(int argc, char **argv) {
 	switch (argc) {
 	case 2:
 		id = atoi(argv[1]);
-		read(otp, id);
+		cli_read(otp, id);
 		break;
-	case 4:
-		usage();
+	case 3:
+		id = atoi(argv[2]);
+		cli_write(otp, id);
 		break;
 	default:
 		usage();

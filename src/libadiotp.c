@@ -2,6 +2,7 @@
 #include <libadiotp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <tee_client_api.h>
 
 struct adi_otp {
@@ -10,7 +11,7 @@ struct adi_otp {
 };
 
 struct adi_otp *adi_otp_open(void) {
-	TEE_UUID uuid = PTA_ADI_OTP_UUID;
+	TEEC_UUID uuid = PTA_ADI_OTP_UUID;
 	uint32_t origin;
 	struct adi_otp *ret;
 	TEEC_Result res;

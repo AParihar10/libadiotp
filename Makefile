@@ -10,7 +10,7 @@ $(OBJS): %.o : %.c
 	$(CC) $(DEBUG) -fPIC $(CFLAGS) -c $< -o $@
 
 adiotp-cli: src/adiotp-cli.o libadiotp.so
-	$(CC) $(DEBUG) -o $@ $+ $(LDFLAGS) -L. -ladiotp -Wl,-rpath=/usr/local/lib
+	$(CC) $(DEBUG) -o $@ $+ $(LDFLAGS) -L. -ladiotp
 
 libadiotp.so: src/libadiotp.o
 	$(CC) $(DEBUG) -fPIC -shared -Wl,-soname,libadiotp.so -o $@ $+ $(LDFLAGS)
