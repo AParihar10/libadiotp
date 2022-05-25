@@ -41,6 +41,16 @@
 #define ADI_OTP_CMD_INVALIDATE		0x02
 
 /*
+ * ADI_OTP_CMD_VERSION - Get library version information
+ *
+ * @param[0] (out value) - .a = major, .b = minor version information
+ * param[1] unused
+ * param[2] unused
+ * param[3] unused
+ */
+#define ADI_OTP_CMD_VERSION			0x03
+
+/*
  * IDs for specific items that can be written or read. Not all items are
  * available for both reading and writing, and access may further depend
  * on the session's access level
@@ -64,5 +74,9 @@
 
 /* Maximum possible size of a buffer */
 #define MAX_OTP_LENGTH 512
+
+/* Version information to detect mismatch between binary and library */
+#define ADI_OTP_MAJOR		1
+#define ADI_OTP_MINOR		0
 
 #endif

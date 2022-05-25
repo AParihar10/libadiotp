@@ -1,4 +1,5 @@
 
+#include <errno.h>
 #include <libadiotp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,8 @@ struct adi_otp {
 	TEEC_Context ctx;
 	TEEC_Session session;
 };
+
+static int adi_otp_check_version(struct adi_otp *otp);
 
 struct adi_otp *adi_otp_open(void) {
 	TEEC_UUID uuid = PTA_ADI_OTP_UUID;
@@ -29,6 +32,10 @@ struct adi_otp *adi_otp_open(void) {
 	if (TEEC_SUCCESS != res)
 		goto finalize;
 
+	res = adi_otp_check_version(ret);
+	if (res)
+		goto finalize;
+
 	return ret;
 
 finalize:
@@ -38,6 +45,51 @@ cleanup:
 	free(ret);
 
 	return NULL;
+}
+
+int adi_otp_get_version(struct adi_otp *otp, int *major, int *minor) {
+	uint32_t origin;
+	TEEC_Result res;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(op));
+	op.paramTypes = TEEC_PARAM_TYPES(
+		TEEC_VALUE_OUTPUT,
+		TEEC_NONE,
+		TEEC_NONE,
+		TEEC_NONE
+	);
+
+	res = TEEC_InvokeCommand(&otp->session, ADI_OTP_CMD_VERSION, &op, &origin);
+	if (TEEC_SUCCESS != res) {
+		fprintf(stderr, "OTP read failed, ret = %d\n", res);
+		return (int) res;
+	}
+
+	*major = op.params[0].value.a;
+	*minor = op.params[0].value.b;
+	return TEEC_SUCCESS;
+}
+
+int adi_otp_check_version(struct adi_otp *otp) {
+	int ret;
+	int major, minor;
+
+	ret = adi_otp_get_version(otp, &major, &minor);
+	if (ret)
+		return ret;
+
+	if (major != ADI_OTP_MAJOR) {
+		fprintf(stderr, "OTP major version mismatch: pTA version = %d, library version = %d\n", major, ADI_OTP_MAJOR);
+		return -EINVAL;
+	}
+
+	if (minor < ADI_OTP_MINOR) {
+		fprintf(stderr, "OTP minor version too old: pTA version = %d, library version = %d\n", minor, ADI_OTP_MINOR);
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 void adi_otp_close(struct adi_otp *otp) {
