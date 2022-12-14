@@ -13,5 +13,9 @@ int adi_otp_get_version(struct adi_otp *otp, int *major, int *minor);
 int adi_otp_read(struct adi_otp *otp, uint32_t id, void *buf, uint32_t *len);
 int adi_otp_write(struct adi_otp *otp, uint32_t id, void *buf, uint32_t len);
 int adi_otp_invalidate(struct adi_otp *otp, uint32_t id);
+int adi_otp_is_valid(struct adi_otp *otp, uint32_t id, uint32_t *valid);
+int adi_otp_is_written(struct adi_otp *otp, uint32_t id, uint32_t *written);
+int adi_otp_is_locked(struct adi_otp *otp, uint32_t *locked);
+int adi_otp_lock(struct adi_otp *otp);
 
 #endif

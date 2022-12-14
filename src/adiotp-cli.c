@@ -8,8 +8,13 @@
 static void usage(void) {
 	fprintf(stderr, "\n");
 	fprintf(stderr, " Usage:\n");
-	fprintf(stderr, "    adiotp-cli [id]\n");
-	fprintf(stderr, "    adiotp-cli -s [id]\n");
+	fprintf(stderr, "    adiotp-cli [id]       Read [id]\n");
+	fprintf(stderr, "    adiotp-cli -s [id]    Write [id]\n");
+	fprintf(stderr, "    adiotp-cli -l         Lock SoC\n");
+	fprintf(stderr, "    adiotp-cli -i [id]    Invalidate key [id]\n");
+	fprintf(stderr, "    adiotp-cli -v [id]    Check if key [id] is valid\n");
+	fprintf(stderr, "    adiotp-cli -w [id]    Check if key [id] is written\n");
+	fprintf(stderr, "    adiotp-cli -z         Check if SoC is locked\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, " When reading, the OTP value will be sent to stdout.\n");
 	fprintf(stderr, " To view it, you may wish to use hexdump or xxd, for example:\n");
@@ -62,6 +67,67 @@ static int cli_write(struct adi_otp *otp, uint32_t id) {
 	return 0;
 }
 
+static int cli_lock(struct adi_otp *otp) {
+	int ret = adi_otp_lock(otp);
+
+	if (ret)
+		fprintf(stderr, " Lock error = %d\n", ret);
+
+	return ret;
+}
+
+static int cli_is_locked(struct adi_otp *otp) {
+	int ret;
+	int locked = 0;
+
+	ret = adi_otp_is_locked(otp, &locked);
+	if (ret) {
+		fprintf(stderr, " is_locked error = %d\n", ret);
+		return ret;
+	}
+
+	printf("%s\n", (locked ? "SoC Locked" : "SoC Unlocked"));
+	return 0;
+}
+
+static int cli_invalidate(struct adi_otp *otp, uint32_t id) {
+	int ret;
+
+	ret = adi_otp_invalidate(otp, id);
+	if (ret)
+		fprintf(stderr, " invalidate failed for %d = %d\n", id, ret);
+
+	return ret;
+}
+
+static int cli_is_valid(struct adi_otp *otp, uint32_t id) {
+	int valid = 0;
+	int ret;
+
+	ret = adi_otp_is_valid(otp, id, &valid);
+	if (ret) {
+		fprintf(stderr, " is_valid for %d error = %d\n", id, ret);
+		return ret;
+	}
+
+	printf("%d %s valid\n", id, (valid ? "is" : "is not"));
+	return 0;
+}
+
+static int cli_is_written(struct adi_otp *otp, uint32_t id) {
+	int written = 0;
+	int ret;
+
+	ret = adi_otp_is_written(otp, id, &written);
+	if (ret) {
+		fprintf(stderr, " is_written for %d error = %d\n", id, ret);
+		return ret;
+	}
+
+	printf("%d %s written\n", id, (written ? "is" : "is not"));
+	return 0;
+}
+
 int main(int argc, char **argv) {
 	struct adi_otp *otp;
 	uint32_t id;
@@ -74,18 +140,58 @@ int main(int argc, char **argv) {
 
 	switch (argc) {
 	case 2:
-		id = atoi(argv[1]);
-		cli_read(otp, id);
+		if (argv[1][0] == '-') {
+			switch (argv[1][1]) {
+			case 'l':
+				cli_lock(otp);
+				break;
+			case 'z':
+				cli_is_locked(otp);
+				break;
+			default:
+				usage();
+				goto cleanup;
+				break;
+			}
+		}
+		else {
+			id = atoi(argv[1]);
+			cli_read(otp, id);
+		}
 		break;
 	case 3:
+		if (argv[1][0] != '-') {
+			usage();
+			goto cleanup;
+		}
+
 		id = atoi(argv[2]);
-		cli_write(otp, id);
+
+		switch(argv[1][1]) {
+		case 's':
+			cli_write(otp, id);
+			break;
+		case 'i':
+			cli_invalidate(otp, id);
+			break;
+		case 'v':
+			cli_is_valid(otp, id);
+			break;
+		case 'w':
+			cli_is_written(otp, id);
+			break;
+		default:
+			usage();
+			goto cleanup;
+			break;
+		}
 		break;
 	default:
 		usage();
 		break;
 	}
 
+cleanup:
 	adi_otp_close(otp);
 
 	return 0;

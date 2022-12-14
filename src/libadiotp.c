@@ -177,3 +177,82 @@ int adi_otp_invalidate(struct adi_otp *otp, uint32_t id) {
 
 	return 0;
 }
+
+int adi_otp_is_valid(struct adi_otp *otp, uint32_t id, uint32_t *valid) {
+	uint32_t origin;
+	TEEC_Result res;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(op));
+	op.paramTypes = TEEC_PARAM_TYPES(
+		TEEC_VALUE_INPUT,
+		TEEC_VALUE_OUTPUT,
+		TEEC_NONE,
+		TEEC_NONE
+	);
+
+	op.params[0].value.a = id;
+
+	res = TEEC_InvokeCommand(&otp->session, ADI_OTP_CMD_IS_VALID, &op, &origin);
+	if (TEEC_SUCCESS != res) {
+		fprintf(stderr, "OTP is_valid failed, ret = %d\n", res);
+		return (int) res;
+	}
+
+	*valid = op.params[1].value.a;
+
+	return 0;
+}
+
+int adi_otp_is_written(struct adi_otp *otp, uint32_t id, uint32_t *written) {
+	uint32_t origin;
+	TEEC_Result res;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(op));
+	op.paramTypes = TEEC_PARAM_TYPES(
+		TEEC_VALUE_INPUT,
+		TEEC_VALUE_OUTPUT,
+		TEEC_NONE,
+		TEEC_NONE
+	);
+
+	op.params[0].value.a = id;
+
+	res = TEEC_InvokeCommand(&otp->session, ADI_OTP_CMD_IS_WRITTEN, &op, &origin);
+	if (TEEC_SUCCESS != res) {
+		fprintf(stderr, "OTP is_written failed, ret = %d\n", res);
+		return (int) res;
+	}
+
+	*written = op.params[1].value.a;
+
+	return 0;
+}
+
+int adi_otp_is_locked(struct adi_otp *otp, uint32_t *locked) {
+	return adi_otp_is_written(otp, ADI_OTP_ID_lock, locked);
+}
+
+int adi_otp_lock(struct adi_otp *otp) {
+	uint32_t origin;
+	TEEC_Result res;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(op));
+	op.paramTypes = TEEC_PARAM_TYPES(
+		TEEC_NONE,
+		TEEC_NONE,
+		TEEC_NONE,
+		TEEC_NONE
+	);
+
+	res = TEEC_InvokeCommand(&otp->session, ADI_OTP_CMD_LOCK, &op, &origin);
+	if (TEEC_SUCCESS != res) {
+		fprintf(stderr, "OTP lock failed, ret = %d\n", res);
+		return (int) res;
+	}
+
+	return 0;
+}
+
