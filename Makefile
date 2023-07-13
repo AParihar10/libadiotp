@@ -13,7 +13,7 @@ adiotp-cli: src/adiotp-cli.o libadiotp.so
 	$(CC) $(DEBUG) -o $@ $+ $(LDFLAGS) -L. -ladiotp
 
 libadiotp.so: src/libadiotp.o
-	$(CC) $(DEBUG) -fPIC -shared -Wl,-soname,libadiotp.so -o $@ $+ $(LDFLAGS)
+	$(CC) $(DEBUG) -fPIC -shared -Wl,-soname,libadiotp.so.2 -o $@ $+ $(LDFLAGS)
 
 clean:
 	rm -rf $(OBJS) libadiotp.so adiotp-cli
