@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright 2023, Analog Devices, Inc. All rights reserved.
+ */
+
 #ifndef LIBADIOTP_H
 #define LIBADIOTP_H
 
