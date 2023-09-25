@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: BSD-2-Clause
-/*
- * Copyright 2022, Analog Devices, Inc.
+/* SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright 2023, Analog Devices, Inc. All rights reserved.
  */
+
 #ifndef ADI_OTP_PTA_H
 #define ADI_OTP_PTA_H
 
